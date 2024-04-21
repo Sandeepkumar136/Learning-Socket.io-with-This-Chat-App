@@ -1,4 +1,4 @@
-const http=require("http")
+const http=require("http");
 
 const express=require("express");
 
@@ -17,8 +17,10 @@ const server=http.createServer(app);
 const io= new Server(server);
 
 io.on("connection", (socket)=>{
-    console.log("A new user connected", socket.id);
-})
+    socket.on("user-message", (message)=>{
+        io.emit('message', message);
+    });
+});
 
 app.use(express.static(path.resolve("./public")));
 
