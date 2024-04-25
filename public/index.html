@@ -5,14 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link rel="stylesheet" href="./style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
-
   <div class="container">
-    <input type="text" name="sendmessage" placeholder="enter message" id="sendmessage" />
-  <button id="Sendbtn">Send</button>
+    <div class="middle-conatainer">
+      <div id="message-box"></div>
+      <div class="input-container">
+        <input type="text" name="sendmessage" placeholder="enter message" id="sendmessage"/>
+        <button id="Sendbtn"><i class='bx bxs-send'></i></button>
+        <button id="clear-chat" title="Clear Chat"><i class='bx bxs-notification'></i></button>
+      </div>
+    </div>
   </div>
-
 </body>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -20,8 +25,50 @@
   const socket = io();
   const Sendbtn=document.getElementById("Sendbtn");
   const messageInput=document.getElementById("sendmessage");
+  const allmessages=document.getElementById("message-box");
+  const clear_cachie=document.getElementById("clear-chat");
 
-  socket.on("message", (message)=>console.log(message));
+  // Function to add a <p> element to the DOM and save its text content to local storage
+function addParagraphAndSave(message) {
+    const p = document.createElement("p");
+    p.innerHTML = message;
+    allmessages.appendChild(p);
+
+    // Save the text content to local storage if it's not already present
+    const storedMessages = JSON.parse(localStorage.getItem('storedMessages')) || [];
+    if (!storedMessages.includes(message)) {
+        storedMessages.push(message);
+        localStorage.setItem('storedMessages', JSON.stringify(storedMessages));
+    }
+}
+
+// Function to load and display stored messages from local storage
+function loadStoredMessages() {
+    const storedMessages = JSON.parse(localStorage.getItem('storedMessages')) || [];
+    storedMessages.forEach(message => {
+        addParagraphAndSave(message);
+    });
+}
+
+// Call the function to load and display stored messages when the page loads
+window.addEventListener('load', loadStoredMessages);
+
+
+function myFunction(){
+  if(confirm("Are you want to remove chat")){
+    localStorage.removeItem("storedMessages");
+    allmessages.innerHTML='';
+  }else{
+
+  };
+};
+clear_cachie.addEventListener('click', myFunction);
+
+// Socket event listener
+socket.on("message", (message) => {
+    addParagraphAndSave(message);
+});
+
 
   Sendbtn.addEventListener('click', (e)=>{
     const message=messageInput.value;
@@ -29,6 +76,8 @@
     // console.log(message);
 
     socket.emit("user-message", message);
+
+    messageInput.value='';
   });
 
 </script>
